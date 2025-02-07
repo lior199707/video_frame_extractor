@@ -37,6 +37,12 @@ def extract_frames(video_path, output_folder, frame_interval, start_time='0:00',
         end_time (float): End time in seconds (default: None, process until end)
         progress_callback (callable): Optional callback function for progress updates
     """
+    START_CROP_Y = 140
+    END_CROP_Y = 668
+    START_CROP_X = 649
+    END_CROP_X = 1596
+    RESIZE_DIM = (1024, 512) # (new x dim, new y dim)
+
     # Create or clear output directory
     output_path = Path(output_folder)
     if output_path.exists():
@@ -95,9 +101,13 @@ def extract_frames(video_path, output_folder, frame_interval, start_time='0:00',
             break
             
         if (frame_count - start_frame) % frame_interval == 0:
+            # Crop and resize frame
+            cropped_frame = frame[START_CROP_Y:END_CROP_Y, START_CROP_X:END_CROP_X]
+            resized_frame = cv2.resize(cropped_frame, RESIZE_DIM, interpolation=cv2.INTER_CUBIC)
+
             # Save frame as image
             output_path = os.path.join(output_folder, f"frame_{frame_count:06d}.jpg")
-            cv2.imwrite(output_path, frame)
+            cv2.imwrite(output_path, resized_frame)
             saved_count += 1
             
             # Calculate and report progress
